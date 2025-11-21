@@ -16,18 +16,28 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      # 🔥 AWS OIDC 로그인
+      # 1️⃣ Maven Build (JAR 생성)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      # 2️⃣ AWS OIDC 로그인
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 🔥 ECR 로그인
+      # 3️⃣ ECR 로그인
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 🔥 Docker build & push
+      # 4️⃣ Docker build & push
       - name: Build, tag and push image to ECR
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
