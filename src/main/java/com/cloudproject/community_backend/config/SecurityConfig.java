@@ -51,16 +51,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://3.134.105.37",
-            "http://163.180.160.104:5173",
-            "http://3.90.103.16",
-            "http://54.164.108.223:5173",
-            "http://13.222.188.124:5173",
-            "http://98.93.238.114:5173"
-        ));
+        // 모든 origin 허용 (IP 변경 시 코드 수정 불필요)
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // 인증정보 허용 (JWT 쿠키 or Authorization 헤더)

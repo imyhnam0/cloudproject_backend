@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.cloudproject.community_backend.entity.Post;
 import com.cloudproject.community_backend.entity.PostBoardType;
 import com.cloudproject.community_backend.entity.User;
+import com.cloudproject.community_backend.repository.CommentLikeRepository;
+import com.cloudproject.community_backend.repository.CommentRepository;
 import com.cloudproject.community_backend.repository.PostRepository;
 import com.cloudproject.community_backend.repository.UserRepository;
 import com.cloudproject.community_backend.service.PostService;
@@ -30,6 +32,8 @@ public class PostController {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final CommentLikeRepository commentLikeRepository;
     private final PostService postService;
 
     // DTO 정의 (Swagger에서 Request Body 명확히 보여주기)
@@ -149,6 +153,9 @@ public class PostController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "작성자만 삭제할 수 있습니다.");
         }
 
+        // cascade 삭제: 댓글 좋아요 -> 댓글 -> 글
+        commentLikeRepository.deleteByPostId(id);
+        commentRepository.deleteByPostId(id);
         postRepository.delete(post);
     }
 }
