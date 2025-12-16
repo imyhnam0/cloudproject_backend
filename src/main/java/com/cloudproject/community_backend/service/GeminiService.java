@@ -37,7 +37,7 @@ public class GeminiService {
 
         try {
             String response = webClient.post()
-                .uri("/gemini-2.0-flash:generateContent")
+                .uri("/gemini-2.5-flash:generateContent")
                 .bodyValue(Map.of(
                     "contents", List.of(
                         Map.of("parts", List.of(Map.of("text", prompt)))
@@ -94,7 +94,7 @@ public class GeminiService {
 
         try {
             String response = webClient.post()
-                .uri("/gemini-2.0-flash:generateContent")
+                .uri("/gemini-2.5-flash:generateContent")
                 .bodyValue(Map.of(
                     "contents", List.of(
                         Map.of("parts", List.of(Map.of("text", prompt)))
