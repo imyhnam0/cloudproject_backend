@@ -66,7 +66,11 @@ public class UserController {
 
         // 학교 조회 (없으면 생성)
         School school = schoolRepository.findByName(schoolName)
-                .orElseGet(() -> schoolRepository.save(new School(null, schoolName, null)));
+                .orElseGet(() -> {
+                    School newSchool = new School();
+                    newSchool.setName(schoolName);
+                    return schoolRepository.save(newSchool);
+                });
 
         // 사용자 생성
         User user = new User();
