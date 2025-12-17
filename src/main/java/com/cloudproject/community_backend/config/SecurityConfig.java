@@ -37,14 +37,12 @@ public class SecurityConfig {
                     "/api/users/register",
                     "/api/users/register-with-card",
                     "/api/cloud/**",
+                    // springdoc-openapi: application.properties에서 /api-docs 로 커스텀되어 있을 수 있음
                     "/v3/api-docs/**",
+                    "/api-docs",
+                    "/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
-                    // 비로그인 사용자도 게시글/댓글 조회 허용
-                    "/api/posts",
-                    "/api/posts/{id}",
-                    "/api/comments/**",
-                    "/api/schools/**",
                     "/health"
                 ).permitAll()
                 .anyRequest().authenticated() // JWT 유효하면 통과
@@ -53,6 +51,8 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+
 
     // CORS 허용 설정
     @Bean
