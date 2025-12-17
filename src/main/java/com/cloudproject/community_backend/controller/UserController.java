@@ -45,34 +45,42 @@ public class UserController {
     private final JwtUtil jwtUtil;
     
     /**
-     * 간단한 회원가입 (JSON)
+     * 간단한 회원가입 (JSON) - 학교명으로 회원가입
      */
     @PostMapping("/register")
-    @Operation(summary = "회원가입", description = "이메일, 비밀번호, 이름, 학교 ID로 간단하게 회원가입합니다.")
+    @Operation(summary = "회원가입", description = "이메일, 비밀번호, 이름, 학교명으로 간단하게 회원가입합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원가입 성공"),
-            @ApiResponse(responseCode = "400", description = "중복 이메일 / 유효하지 않은 학교 ID")
+            @ApiResponse(responseCode = "400", description = "중복 이메일")
     })
     public ResponseEntity<RegisterResponse> registerSimple(
-            @RequestBody @Valid RegisterRequest request
+            @RequestBody java.util.Map<String, String> request
     ) {
+        String email = request.get("email");
+        String password = request.get("password");
+        String username = request.get("username");
+        String schoolName = request.get("schoolName");
         // 이메일 중복 체크
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(email).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 가입된 이메일입니다.");
         }
 
-        // 학교 조회
-        School school = schoolRepository.findById(request.getSchoolId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 학교 ID입니다."));
+        // 학교 조회 (없으면 생성)
+        School school = schoolRepository.findByName(schoolName)
+                .orElseGet(() -> {
+                    School newSchool = new School();
+                    newSchool.setName(schoolName);
+                    return schoolRepository.save(newSchool);
+                });
 
         // 사용자 생성
         User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setUsername(request.getName());
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setUsername(username);
         user.setSchool(school);
-        user.setGrade(null); // 학년은 나중에 선배 인증에서 설정
-        user.setIsSeniorVerified(false); // 기본적으로 선배 인증 안됨
+        user.setGrade(null);
+        user.setIsSeniorVerified(false);
 
         User savedUser = userRepository.save(user);
 
@@ -116,34 +124,9 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 가입된 이메일입니다.");
         }
 
-        // 학생증 OCR 처리 및 학교명 추출
-        String recognizedSchool = ocrSpaceOcrService.extractSchoolName(studentCard);
-        System.out.println("OCR 반환 학교명: " + recognizedSchool);
-
-        // 공백 제거 + 대소문자 무시
-        String normalizedInput = schoolName.replaceAll("\\s+", "").toLowerCase();
-        String normalizedOcr = recognizedSchool.replaceAll("\\s+", "").toLowerCase();
-
-        if (!normalizedInput.equals(normalizedOcr)) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("학교 인증 실패. 입력한 학교명: " + schoolName + ", OCR 결과: " + recognizedSchool);
-        }
-
-        // OCR로 입학년도 추출 및 학년 계산
-        Integer admissionYear = ocrSpaceOcrService.extractAdmissionYear(studentCard);
+        // OCR 검증 제거 - 학생증 업로드만 확인
         Integer grade = null;
         boolean isSenior = false;
-
-        if (admissionYear != null) {
-            grade = ocrSpaceOcrService.calculateGradeFromYear(admissionYear);
-            if (grade != null && grade >= 2) {
-                isSenior = true;
-            }
-            System.out.println("OCR 입학년도: " + admissionYear + ", 계산된 학년: " + grade);
-        } else {
-            System.out.println("입학년도 추출 실패 - 학년 정보 없이 가입 진행");
-        }
 
         // DB에서 학교 조회 (없으면 생성)
         School school = schoolRepository.findByName(schoolName)
