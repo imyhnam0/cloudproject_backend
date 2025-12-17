@@ -54,11 +54,12 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "중복 이메일")
     })
     public ResponseEntity<RegisterResponse> registerSimple(
-            @RequestParam String email,
-            @RequestParam String password,
-            @RequestParam String username,
-            @RequestParam String schoolName
+            @RequestBody java.util.Map<String, String> request
     ) {
+        String email = request.get("email");
+        String password = request.get("password");
+        String username = request.get("username");
+        String schoolName = request.get("schoolName");
         // 이메일 중복 체크
         if (userRepository.findByEmail(email).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 가입된 이메일입니다.");
