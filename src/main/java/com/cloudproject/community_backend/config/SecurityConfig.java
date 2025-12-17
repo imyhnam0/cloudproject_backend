@@ -47,7 +47,7 @@ public class SecurityConfig {
                     "/api/schools/**",
                     "/health"
                 ).permitAll()
-                .anyRequest().authenticated() // JWT 유효하면 통과
+                .anyRequest().permitAll() // JWT 유효하면 통과
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
